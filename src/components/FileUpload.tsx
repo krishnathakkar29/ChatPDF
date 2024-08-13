@@ -3,6 +3,7 @@ import { uploadToS3 } from "@/lib/s3";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { Inbox, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
@@ -10,6 +11,7 @@ import toast from "react-hot-toast";
 type Props = {};
 
 const FileUpload = (props: Props) => {
+  const router = useRouter();
   const [uploading, setUploading] = React.useState(false);
   const { mutate, isPending } = useMutation({
     mutationFn: async ({
@@ -31,7 +33,7 @@ const FileUpload = (props: Props) => {
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
     onDrop: async (acceptedFiles) => {
-      console.log(acceptedFiles);
+      // console.log(acceptedFiles);
       const file = acceptedFiles[0];
       if (file.size > 10 * 1024 * 1024) {
         // bigger than 10mb!
@@ -41,16 +43,16 @@ const FileUpload = (props: Props) => {
       try {
         setUploading(true);
         const data = await uploadToS3(file);
-        console.log("data", data);
+
         if (!data?.file_key || !data.file_name) {
           toast.error("Something went wrong");
           return;
         }
 
         mutate(data, {
-          onSuccess: (data) => {
-            console.log(data);
-            toast.success(data.message);
+          onSuccess: ({ chat_id }) => {
+            toast.success("Chat created!");
+            router.push(`/chat/${chat_id}`);
           },
           onError: (err) => {
             toast.error("Error creating chat");
@@ -58,7 +60,8 @@ const FileUpload = (props: Props) => {
           },
         });
       } catch (error) {
-        console.log("fileupload component ", error);
+        toast.error("Error creating chat");
+        console.log("fileupload component!!!!!!!!!!! ", error);
       } finally {
         setUploading(false);
       }

@@ -1,3 +1,7 @@
+import { db } from "@/lib/db";
+import { chats } from "@/lib/db/schema";
+import { loadS3IntoPinecone } from "@/lib/pinecone";
+import { getS3Url } from "@/lib/s3";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -11,7 +15,26 @@ export async function POST(req: Request, res: Response) {
     const { file_key, file_name } = body;
 
     console.log(file_key, file_name);
-    return NextResponse.json({ message: "success" });
+    await loadS3IntoPinecone(file_key);
+
+    const chat_id = await db
+      .insert(chats)
+      .values({
+        fileKey: file_key,
+        pdfName: file_name,
+        pdfUrl: getS3Url(file_key),
+        userId,
+      })
+      .returning({
+        insertedId: chats.id,
+      });
+    console.log("chat_id", chat_id);
+    return NextResponse.json(
+      {
+        chat_id: chat_id[0].insertedId,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.log("Error in chat route", error);
 
