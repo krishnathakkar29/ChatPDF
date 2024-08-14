@@ -6,9 +6,6 @@ const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
 export async function getEmbeddings(text: string) {
   try {
     const response = await model.embedContent(text.replace(/\n/g, " "));
-    console.log("response", response);
-    const embedding = response.embedding;
-    console.log("response", embedding);
 
     return response.embedding.values as number[];
   } catch (error) {

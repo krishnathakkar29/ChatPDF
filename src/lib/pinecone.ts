@@ -40,7 +40,6 @@ export async function loadS3IntoPinecone(file_key: string) {
 
     // 2. split and segment the pdf
     const documents = await Promise.all(pages.map(prepareDocument));
-    console.log("documents\n", documents);
 
     // 3. vectorise and embed individual documents
     const vectors = await Promise.all(documents.flat().map(embedDocument));
@@ -63,7 +62,6 @@ async function embedDocument(doc: Document) {
   try {
     const embeddings = await getEmbeddings(doc.pageContent);
     const hash = md5(doc.pageContent);
-
     return {
       id: hash,
       values: embeddings,
@@ -86,7 +84,7 @@ export const truncateStringByBytes = (str: string, bytes: number) => {
 async function prepareDocument(page: PDFPage) {
   let { pageContent, metadata } = page;
   pageContent = pageContent.replace(/\n/g, "");
-  // split the docs
+  // splitting the docs
   const splitter = new RecursiveCharacterTextSplitter();
   const docs = await splitter.splitDocuments([
     new Document({
@@ -97,5 +95,6 @@ async function prepareDocument(page: PDFPage) {
       },
     }),
   ]);
+
   return docs;
 }
