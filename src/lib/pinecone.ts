@@ -25,7 +25,7 @@ type PDFPage = {
 };
 export async function loadS3IntoPinecone(file_key: string) {
   try {
-    // 1 obtain the pdf => downlaod and read the pdf
+    // obtain the pdf => downlaod and read the pdf
     console.log("in loads3 into pinecone , pinecone.ts///");
 
     const file_name = await downloadFromS3(file_key);
@@ -49,7 +49,7 @@ export async function loadS3IntoPinecone(file_key: string) {
     const pineconeIndex = await client.index("chatpdf");
     const namespace = pineconeIndex.namespace(convertToAscii(file_key));
 
-    console.log("inserting vectors into pinecone");
+    // console.log("inserting vectors into pinecone");
     await namespace.upsert(vectors);
 
     return documents[0];
